@@ -1,12 +1,6 @@
 # -*- coding: utf-8 -*-
-"""
-Spyder Editor
-
-This is a temporary script file.
-"""
 
 from nltk.corpus import europarl_raw
-from nltk.corpus import gutenberg
 from nltk.tokenize import word_tokenize
 from nltk import ngrams
 import math
@@ -28,10 +22,33 @@ def LaplaceSmoothing(list1, list2, freq1, freq2, voc):
 
     return prob
 
+def CheckLogProb(sentence,valid_bigrams,Laplace_bigrams,voc_uni,valid_trigrams,
+                 Laplace_trigrams,voc_bi):
+    unigrams=word_tokenize(sentence)
+    test_bigrams = ngrams(["$start1"]+unigrams,2)
+    test_trigrams =ngrams(["$start1","$start2"]+unigrams,3)
+
+    valid_tbigrams=[]
+    for x,y in test_bigrams:
+        valid_tbigrams.append((x,y))
+    
+    valid_ttrigrams=[]
+    for x,y,z in test_trigrams:
+        valid_ttrigrams.append((x,y,z))
+
+    bigramsLogProb=LogProbabilities(valid_bigrams,valid_tbigrams,
+                                    Laplace_bigrams,voc_uni)
+    trigramsLogProb=LogProbabilities(valid_trigrams,valid_ttrigrams,
+                                     Laplace_trigrams,voc_bi)
+    
+    return bigramsLogProb,trigramsLogProb
+
+    
+
 def LogProbabilities(ngrams,tngrams,Laplace_ngrams,voc):
     sumProb=0
-    for i in range(len(tngrams)):
-        if tngrams[i] in ngrams:
+    for i in range(len(ngrams)):
+        if ngrams[i] in tngrams:
             sumProb+=math.log(Laplace_ngrams[i])
         else:
             sumProb+=math.log(float(1)/voc)
@@ -41,11 +58,10 @@ def LogProbabilities(ngrams,tngrams,Laplace_ngrams,voc):
    
 training_data=europarl_raw.english.raw('europarl-v7.el-en.en')
 unigrams = word_tokenize(training_data[0:200000])
-
-
-
 wordfreq_unigrams = [unigrams.count(w) for w in unigrams]
 
+'''replace  all  the rare words of the training subset (e.g., words that do not 
+occur at least 10 times in the training subset) by a special token *rare*'''
 for f in range(len(wordfreq_unigrams)):
    if wordfreq_unigrams[f]<10:
        unigrams[f]="*rare*"
@@ -58,6 +74,7 @@ for w in range(len(unigrams)):
     
 wordfreq_vunigrams=[valid_unigrams.count(w) for w in valid_unigrams]
 
+#do Laplace smoothing in our bigrams model
 voc_uni = vocabulary(valid_unigrams)
 
 bigrams = ngrams(["$start1"]+unigrams,2)
@@ -71,59 +88,53 @@ for x,y in bigrams:
             valid_bigrams.append((x,y))
 
 wordfreq_vbigrams = [valid_bigrams.count(w) for w in valid_bigrams]
-#print wordfreq_vbigrams 
-#print valid_bigrams
+
 
 Laplace_bigrams=LaplaceSmoothing(valid_unigrams,valid_bigrams,wordfreq_vunigrams,
                        wordfreq_vbigrams,voc_uni)
 
-#trigrams = ngrams(["$start1","$start2"]+unigrams,3)
-#valid_trigrams=[]
-#for x,y,z in trigrams:
-#    if x!="*rare*" and y!="*rare*" and z!="*rare*":
-#        if valid_trigrams==[] and x!="$start1":
-#            valid_trigrams.append(("$start1","$start2",x))
-#            valid_trigrams.append(("$start2",x,y))
-#            valid_trigrams.append((x,y,z))
-#        else:
-#            valid_trigrams.append((x,y,z))
-#
-#wordfreq_vtrigrams = [valid_trigrams.count(w) for w in valid_trigrams]
-##print wordfreq_vtrigrams     
-##print valid_trigrams
-#
-#voc_bi=vocabulary(valid_bigrams)
-#
-#Laplace_trigrams=LaplaceSmoothing(valid_bigrams,valid_trigrams,wordfreq_vbigrams,
-#                       wordfreq_vtrigrams,voc_bi)
+#do Laplace smoothing in our trigrams model
+trigrams = ngrams(["$start1","$start2"]+unigrams,3)
+valid_trigrams=[]
+for x,y,z in trigrams:
+    if x!="*rare*" and y!="*rare*" and z!="*rare*":
+        if valid_trigrams==[] and x!="$start1":
+            valid_trigrams.append(("$start1","$start2",x))
+            valid_trigrams.append(("$start2",x,y))
+            valid_trigrams.append((x,y,z))
+        else:
+            valid_trigrams.append((x,y,z))
+
+wordfreq_vtrigrams = [valid_trigrams.count(w) for w in valid_trigrams]
+
+voc_bi=vocabulary(valid_bigrams)
+
+Laplace_trigrams=LaplaceSmoothing(valid_bigrams,valid_trigrams,wordfreq_vbigrams,
+                       wordfreq_vtrigrams,voc_bi)
 
 
+''' Check the log-probabilities that our trained models return when given 
+(correct) sentences from the test subset vs. (incorrect) sentences of 
+the  same  length  (in  words)  consisting  of  randomly  selected vocabulary 
+words''' 
+
+correct_sentence="You have requested a debate on this subject in the course of the next few days, during this part-session."
+correct_log_Prob=CheckLogProb(correct_sentence,valid_bigrams,Laplace_bigrams,
+                              voc_uni,valid_trigrams,Laplace_trigrams,voc_bi)
+
+print "Log-probability of correct sentence: %s" %(correct_log_Prob,)
+
+incorrect_sentence="This is is is is is is is is is is is is is is is is is is is is."
+incorrect_log_Prob=CheckLogProb(incorrect_sentence,valid_bigrams,
+                                Laplace_bigrams,voc_uni,valid_trigrams,
+                                Laplace_trigrams,voc_bi)
+
+print "Log-probability of incorrect sentence:%s" %(incorrect_log_Prob,)
 
 
-##test_data=europarl_raw.english.raw('ep-00-02-17.en')
-#test_data=gutenberg.raw('melville-moby_dick.txt')
-#test_unigrams = word_tokenize(test_data[0:20000])
-#test_bigrams = ngrams(["$start1"]+test_unigrams,2)
-#test_trigrams =ngrams(["$start1","$start2"]+test_unigrams,3)
-#
-#valid_tbigrams=[]
-#for x,y in test_bigrams:
-#    valid_tbigrams.append((x,y))
-#    
-#valid_ttrigrams=[]
-#for x,y,z in test_trigrams:
-#    valid_ttrigrams.append((x,y,z))
-#
-#
-#
-#bigramsLogProb=LogProbabilities(valid_bigrams,valid_tbigrams,Laplace_bigrams,voc_uni)
-#trigramsLogProb=LogProbabilities(valid_trigrams,valid_ttrigrams,Laplace_trigrams,voc_bi)
-
-#print bigramsLogProb
-#print trigramsLogProb
+#Predict the next (vocabulary) word, as in a predictive keyboard
 
 #Bigram predictions
-
 word = 'is'
 bigram_word_predictions = []
 
@@ -134,32 +145,49 @@ for x,y in valid_bigrams:
     counter+= 1
 
 bigram_word_predictions.sort(key=operator.itemgetter(1), reverse=True)
-print bigram_word_predictions[0:3]
+print "Predict bigram: {0}".format(bigram_word_predictions[0:3])
 
-##Trigram predictions
-#word1='it'
-#word2='is'
-#trigram_word_predictions = []    
-#counter = 0
-#for x,y,z in valid_trigrams:
-#    if word1 == x and word2==y :
-#        trigram_word_predictions.append((z,Laplace_trigrams[counter]))
-#    counter+= 1
-#
-#trigram_word_predictions.sort(key=operator.itemgetter(1), reverse=True)
-#print trigram_word_predictions[0:3]
+#Trigram predictions
+word1='it'
+word2='is'
+trigram_word_predictions = []    
+counter = 0
+for x,y,z in valid_trigrams:
+    if word1 == x and word2==y :
+        trigram_word_predictions.append((z,Laplace_trigrams[counter]))
+    counter+= 1
+
+trigram_word_predictions.sort(key=operator.itemgetter(1), reverse=True)
+print "Predict trigram: {0}".format(trigram_word_predictions[0:3])
 
 
-##cross entropy and perplexity
-#cross_entropy_bigrams=-(1/float(len(valid_tbigrams)))*bigramsLogProb
-#cross_entropy_trigrams=-(1/float(len(valid_ttrigrams)))*trigramsLogProb
-#                        
-#print cross_entropy_bigrams
-#print cross_entropy_trigrams
-#
-#
-#perplexity_bigrams = math.pow(2,cross_entropy_bigrams)
-#perplexity_trigrams = math.pow(2,cross_entropy_trigrams)
-#
-#print perplexity_bigrams
-#print perplexity_trigrams
+'''Estimate  the  language  cross-entropy  and  perplexity  of  our  models  on
+the test subset  of  the corpus. '''
+
+test_data=europarl_raw.english.raw('europarl-v7.el-en.en')        
+test_unigrams = word_tokenize(test_data[200001:208001])
+test_bigrams = ngrams(["$start1"]+unigrams,2)
+test_trigrams =ngrams(["$start1","$start2"]+unigrams,3)
+
+valid_tbigrams=[]
+for x,y in test_bigrams:
+    valid_tbigrams.append((x,y))
+    
+valid_ttrigrams=[]
+for x,y,z in test_trigrams:
+    valid_ttrigrams.append((x,y,z))
+
+bigramsLogProb=LogProbabilities(valid_bigrams,valid_tbigrams,Laplace_bigrams,voc_uni)
+trigramsLogProb=LogProbabilities(valid_trigrams,valid_ttrigrams,Laplace_trigrams,voc_bi)
+    
+cross_entropy_bigrams=-(1/float(len(valid_tbigrams)))*bigramsLogProb
+cross_entropy_trigrams=-(1/float(len(valid_ttrigrams)))*trigramsLogProb
+                        
+print "Cross-entropy of bigrams: "+str(cross_entropy_bigrams)
+print "Cross-entropy of trigrams: "+str(cross_entropy_trigrams)
+
+perplexity_bigrams = math.pow(2,cross_entropy_bigrams)
+perplexity_trigrams = math.pow(2,cross_entropy_trigrams)
+
+print "Perplexity of bigrams: "+str(perplexity_bigrams)
+print "Perplexity of trigrams: "+str(perplexity_trigrams)
