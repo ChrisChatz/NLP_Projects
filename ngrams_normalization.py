@@ -24,6 +24,7 @@ def LaplaceSmoothing(list1, list2, freq1, freq2, voc):
 
 def CheckLogProb(sentence,valid_bigrams,Laplace_bigrams,voc_uni,valid_trigrams,
                  Laplace_trigrams,voc_bi):
+    sentence = sentence.lower()
     unigrams=word_tokenize(sentence)
     test_bigrams = ngrams(["$start1"]+unigrams,2)
     test_trigrams =ngrams(["$start1","$start2"]+unigrams,3)
@@ -57,6 +58,7 @@ def LogProbabilities(ngrams,tngrams,Laplace_ngrams,voc):
     
    
 training_data=europarl_raw.english.raw('europarl-v7.el-en.en')
+training_data = training_data.lower()
 unigrams = word_tokenize(training_data[0:200000])
 wordfreq_unigrams = [unigrams.count(w) for w in unigrams]
 
@@ -164,7 +166,8 @@ print "Predict trigram: {0}".format(trigram_word_predictions[0:3])
 '''Estimate  the  language  cross-entropy  and  perplexity  of  our  models  on
 the test subset  of  the corpus. '''
 
-test_data=europarl_raw.english.raw('europarl-v7.el-en.en')        
+test_data=europarl_raw.english.raw('europarl-v7.el-en.en')
+test_data = test_data.lower()        
 test_unigrams = word_tokenize(test_data[200001:208001])
 test_bigrams = ngrams(["$start1"]+unigrams,2)
 test_trigrams =ngrams(["$start1","$start2"]+unigrams,3)
