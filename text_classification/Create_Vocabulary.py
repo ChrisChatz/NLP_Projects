@@ -1,17 +1,14 @@
-# -*- coding: utf-8 -*-
-
 import re
-import twitter
 import string
 from nltk.tokenize import word_tokenize
+import pickle 
+
 
 def preprocessing (tweet_list):
     
-    processed_voc = []
+    processed_voc = []   
                     
     for ID,status,cat in tweet_list:
-        print ID
-        print status
         
         #Convert to lower case
         status = status.lower()
@@ -28,10 +25,10 @@ def preprocessing (tweet_list):
         
         #Replace emails with whitespace
         status = re.sub(r'[\w\.-]+@[\w\.-]+', ' ', status)
-        
+
         #Replace #word with word
         status = re.sub(r'#([^\s]+)', r'\1', status)
-        
+       
         #Replace digits with space
         status = ''.join(i for i in status if not i.isdigit())
         
@@ -45,15 +42,13 @@ def preprocessing (tweet_list):
                             
             #Remove stopwords
             word = removeStopwords(word)
-            print word
             
-            if word!='':
-                
-                #Write word in the file
+            if word!='':  
+                #Write word in the list
                 processed_voc.append(word)
-                
-    return processed_voc
         
+    return processed_voc
+
 def replaceTwoOrMore(word):
     #look for 2 or more repetitions of character and replace with the character itself
     pattern = re.compile(r"(.)\1{1,}", re.DOTALL)
@@ -68,48 +63,37 @@ def removeStopwords(word):
             return word
 
     return word
-    
-#Setting up Twitter API
-api = twitter.Api(
- consumer_key='...',
- consumer_secret='...',
- access_token_key='...',
- access_token_secret='...'
- )
 
-twitterTrainFile = open("100_topics_100_tweets.sentence-three-point.subtask-A.train.gold.txt", "r")
-data = twitterTrainFile.readlines()
+twitterTrainFile = open("Train_tweets.obj", 'rb') 
+traintweets_list = pickle.load(twitterTrainFile) 
 
-traintweets_list = []
+NumberOfDocuments=0
+for tweet in traintweets_list:
+    NumberOfDocuments+=1
 
-for line in data:
-    tweet = line.split()
-    try:
-        status = api.GetStatus(status_id = tweet[0])
-        traintweets_list.append((tweet[0], status.text, tweet[1]))
-    except:
-        continue
-    
 twitterTrainFile.close()
 
-processed_voc = preprocessing(traintweets_list)
-print processed_voc 
+processed = preprocessing(traintweets_list)
 
-##print traintweets_list
-#negative_tweets = []
-#positive_tweets = []
-#neutral_tweets = []
-#
-#for x,y,z in traintweets_list:
-#    try:
-#        if z == "negative":
-#            negative_tweets.append((x, y))
-#        elif z == "positive":
-#            positive_tweets.append((x, y))
-#        elif z ==  "neutral":
-#           neutral_tweets.append((x, y))
-#    except:
-#        print "error"
-#
-#for items in positive_tweets:
-#        print items
+wordfreq_processed = [processed.count(w) for w in processed]
+
+'''replace  all  the rare words of the training subset (e.g., words that do not 
+occur at least 10 times in the training subset) by a special token *rare*'''
+for f in range(len(wordfreq_processed)):
+   if wordfreq_processed[f]<10:
+       processed[f]="*rare*"
+       
+#create vocabulary of unique words
+vocabulary=[]
+counter=0
+for word in processed:
+    if word not in vocabulary and word!="*rare*":
+        vocabulary.append(word)
+
+ 
+object_pi=vocabulary
+file_pi = open('Vocabulary.obj', 'w') 
+pickle.dump(object_pi, file_pi) 
+file_pi.close()
+
+print "Vocabulary is created"
