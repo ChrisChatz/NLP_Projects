@@ -7,12 +7,12 @@ import math
 import operator
 
 
-def vocabulary(ngram):
-    Vocabulary=0
+def Vocabulary(ngram):
+    vocabulary=0
     unique_words = set(ngram)
     for word in unique_words:
-        Vocabulary=Vocabulary+1
-    return Vocabulary
+        vocabulary=vocabulary+1
+    return vocabulary
 
 def LaplaceSmoothing(list1, list2, freq1, freq2, voc):
     prob = []
@@ -77,7 +77,7 @@ for w in range(len(unigrams)):
 wordfreq_vunigrams=[valid_unigrams.count(w) for w in valid_unigrams]
 
 #do Laplace smoothing in our bigrams model
-voc_uni = vocabulary(valid_unigrams)
+voc_uni = Vocabulary(valid_unigrams)
 
 bigrams = ngrams(["$start1"]+unigrams,2)
 valid_bigrams=[]
@@ -109,7 +109,7 @@ for x,y,z in trigrams:
 
 wordfreq_vtrigrams = [valid_trigrams.count(w) for w in valid_trigrams]
 
-voc_bi=vocabulary(valid_bigrams)
+voc_bi=Vocabulary(valid_bigrams)
 
 Laplace_trigrams=LaplaceSmoothing(valid_bigrams,valid_trigrams,wordfreq_vbigrams,
                        wordfreq_vtrigrams,voc_bi)
