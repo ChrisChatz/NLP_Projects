@@ -5,7 +5,6 @@ import Tools
 
 def probabilitiesAndVoc():
     training_data=europarl_raw.english.raw('europarl-v7.el-en.en')
-#    training_data = training_data.lower()
     sentences=[sent for sent in sent_tokenize(training_data[0:300000])]
     newSentences=[]
     for s in sentences:
