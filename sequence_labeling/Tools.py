@@ -1,4 +1,5 @@
 import math
+from nltk.tokenize import word_tokenize
 
 def vocabulary(ngram):
     vocabulary=[]
@@ -16,3 +17,15 @@ def laplaceSmoothing(bigrams, freqUn, voc):
         prob[key]=p
 
     return prob
+
+
+def compareSentences(testSentence,correctedSentence):
+
+    unigramsTest=word_tokenize(testSentence)
+    unigramsCorrected=word_tokenize(correctedSentence)
+    counter=0
+    for i in range(len(unigramsTest)):
+        if str(unigramsTest)==str(unigramsCorrected):
+            counter+=1
+            
+    print "The correction is %s per cent" % (100 * counter/float((len(testSentence))))

@@ -1,6 +1,6 @@
 from nltk.corpus import europarl_raw
 from nltk.tokenize import sent_tokenize
-import Random_Spelling_Errors,Viterbi_decoder,Language_Model
+import Random_Spelling_Errors,Viterbi_decoder,Language_Model,Tools
 
 
 #load probabilities of bigram model and vocabulary from training data
@@ -8,10 +8,9 @@ print "Train language model"
 prob,voc=Language_Model.probabilitiesAndVoc()
 print "Training done"
 print "------------------------------------------------------------------------------"
-
 test_data=europarl_raw.english.raw('europarl-v7.el-en.en')
 
-sentences=[sent for sent in sent_tokenize(test_data[0:3000])]
+sentences=[sent for sent in sent_tokenize(test_data[:3000])]
 newSentences=[]
 for s in sentences:
     newSentences.append(s)
@@ -24,4 +23,5 @@ for sent in newSentences:
     #Call viterbi decoder to correct spelling errors
     correctedSentence=Viterbi_decoder.viterbiAlgorithm(testSentences,prob,voc)
     print "Corrected Sentence:  %s" %correctedSentence
+    Tools.compareSentences(sent,correctedSentence)
     print "--------------------------------------------------------------------------"

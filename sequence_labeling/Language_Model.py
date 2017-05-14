@@ -5,7 +5,7 @@ import Tools
 
 def probabilitiesAndVoc():
     training_data=europarl_raw.english.raw('europarl-v7.el-en.en')
-    sentences=[sent for sent in sent_tokenize(training_data[0:300000])]
+    sentences=[sent for sent in sent_tokenize(training_data[0:400000])]
     newSentences=[]
     for s in sentences:
         s="start1 "+s
@@ -20,7 +20,7 @@ def probabilitiesAndVoc():
     '''replace  all  the rare words of the training subset (e.g., words that do not 
     occur at least 10 times in the training subset) by a special token *rare*'''
     for f in range(len(wordfreq_unigrams)):
-       if wordfreq_unigrams[f]<10:
+       if wordfreq_unigrams[f]<10 or unigrams[f]=="start1":
            unigrams[f]="*rare*"
     
     
