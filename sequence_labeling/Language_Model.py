@@ -5,7 +5,7 @@ import Tools
 
 def probabilitiesAndVoc():
     training_data=europarl_raw.english.raw('europarl-v7.el-en.en')
-    sentences=[sent for sent in sent_tokenize(training_data[0:400000])]
+    sentences=[sent for sent in sent_tokenize(training_data[:400000])]
     newSentences=[]
     for s in sentences:
         s="start1 "+s
@@ -16,18 +16,17 @@ def probabilitiesAndVoc():
     
     wordfreq_unigrams = [unigrams.count(w) for w in unigrams]
     
-    #print len(unigrams)
     '''replace  all  the rare words of the training subset (e.g., words that do not 
     occur at least 10 times in the training subset) by a special token *rare*'''
     for f in range(len(wordfreq_unigrams)):
-       if wordfreq_unigrams[f]<10 or unigrams[f]=="start1":
+       if wordfreq_unigrams[f]<2 or unigrams[f]=="start1":
            unigrams[f]="*rare*"
     
     
     valid_unigrams=[]
     for w in range(len(unigrams)):
         if unigrams[w]!="*rare*":
-            valid_unigrams.append(str(unigrams[w]))
+            valid_unigrams.append(unigrams[w])
             
                
     wordfreq_vunigrams=[valid_unigrams.count(w) for w in valid_unigrams]
@@ -40,7 +39,7 @@ def probabilitiesAndVoc():
     valid_bigrams=[]
     for x,y in bigrams:
         if x!="*rare*" and y!="*rare*":
-            valid_bigrams.append((str(x),str(y)))
+            valid_bigrams.append((x,y))
     
     bigramsFreq=[valid_bigrams.count(w) for w in valid_bigrams]
     bigramsDict={}

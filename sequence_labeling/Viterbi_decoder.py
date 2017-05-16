@@ -8,12 +8,16 @@ def minDistance(word,voc,endList):
     punctuationList=['.',',','-','(',')','?','/',':','%','"',"'"]
     tmpList=[]
     letters1=list(word)
-    if word.isdigit():
+    if word in voc:
+        tmpList.append((0,word))
+        return tmpList
+    
+    elif word.isdigit():
         tmpList.append((0,word))
         return tmpList
     
     elif word not in punctuationList:
-        for i in voc:
+        for i in voc:    
             if i not in punctuationList:
                 letters2=list(i)
         #        Check if the first letter is upper to compare it with specific words
@@ -24,7 +28,7 @@ def minDistance(word,voc,endList):
                 elif letters1[0] in punctuationList:
                     tmpList.append(Distances.levenshtein_Distance("".join(letters1[1:-1]),i))
         tmpList=sorted(tmpList)
-        return tmpList[:endList]
+        return tmpList[:endList]       
     else:
         tmpList.append((0,word))
         return tmpList
@@ -41,24 +45,9 @@ def viterbiAlgorithm(testSentence,prob,voc):
     prevBigram=[]
     prevBigram.append((0,(str(unigrams[0]),str(unigrams[1]))))
     V[0][unigrams[0],unigrams[1]]={"prob":0.0, "previous":None}
-    wordsDict[(unigrams[2],1)]=minDistance(str(unigrams[2]),voc,5)
-#    print wordsDict
     
-    #Those for loops are for step one
-    for un,lvl in wordsDict.keys():
-        V.append({})
-        for dist,word in wordsDict[(un,lvl)]: 
-            levenshtein=math.log(1/float((dist+1)))
-            for z,(x,y) in prevBigram:
-                if z==0:
-                        try:
-                            V[1][y,word] = {"prob":levenshtein + prob[(str(unigrams[1]),word)], "previous":(x,y)}
-                        except:
-                            V[1][y,word] = {"prob":levenshtein + math.log(1/float(len(voc))), "previous":(x,y)}
-            prevBigram.append((1,(unigrams[1],word)))
-    
-    #Those for loops are for step 2 and so on
-    for step in range(3, len(unigrams)):
+    #Those for loops are for step 1 and so on
+    for step in range(2, len(unigrams)):
     
             V.append({})
             wordsDict[(unigrams[step],step-1)]=minDistance(str(unigrams[step]),voc,5)

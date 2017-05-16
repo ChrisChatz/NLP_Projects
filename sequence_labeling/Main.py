@@ -23,5 +23,5 @@ for sent in newSentences:
     #Call viterbi decoder to correct spelling errors
     correctedSentence=Viterbi_decoder.viterbiAlgorithm(testSentences,prob,voc)
     print "Corrected Sentence:  %s" %correctedSentence
-    Tools.compareSentences(sent,correctedSentence)
+    Tools.compareSentences(sent,testSentences,correctedSentence)
     print "--------------------------------------------------------------------------"

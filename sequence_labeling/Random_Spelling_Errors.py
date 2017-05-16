@@ -14,17 +14,17 @@ def randomSpellingErrors(sentence):
             indexRand=random.randint(0,(len(word)-1))
             charRand=random.randint(0,25)
             
-            if len(word)>=2 and len(word)<=3 and error>80:
+            if len(word)>=2 and len(word)<=3 and error>90:
+                errorWord=word[:indexRand]+chars[charRand]+word[indexRand+1:]
+            elif len(word)>=4 and len(word)<=5 and error>80:
                 errorWord=word[:indexRand]+chars[charRand]+word[indexRand+1:]
             elif len(word)>=4 and len(word)<=5 and error>70:
-                errorWord=word[:indexRand]+chars[charRand]+word[indexRand+1:]
-            elif len(word)>=4 and len(word)<=5 and error>60:
                 errorWord=word[:indexRand]+word[indexRand+1:]
+            elif len(word)>=6 and len(word)<=7 and error>65:
+                errorWord=word[:indexRand]+chars[charRand]+word[indexRand+1:]
             elif len(word)>=6 and len(word)<=7 and error>60:
-                errorWord=word[:indexRand]+chars[charRand]+word[indexRand+1:]
-            elif len(word)>=6 and len(word)<=7 and error>40:
                 errorWord=word[:indexRand]+word[indexRand+1:]
-            elif len(word)>=8 and len(word)<=12 and error>40:
+            elif len(word)>=8 and len(word)<=12 and error>50:
                 errorWord=word[:indexRand]+chars[charRand]+word[indexRand+1:]
         
         errorList.append(errorWord)
