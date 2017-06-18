@@ -1,0 +1,12 @@
+S -> NP VP
+VP -> VP PP
+VP -> V NP
+PP -> P NP
+NP -> DET N
+NP -> NP PP
+NP -> she
+V -> eats
+P -> with
+N -> fork
+N -> fish
+DET -> a
