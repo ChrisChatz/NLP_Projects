@@ -4,52 +4,64 @@ from nltk import ngrams
 import Tools
 
 def probabilitiesAndVoc():
+    
+    #Read the data
     training_data=europarl_raw.english.raw('europarl-v7.el-en.en')
+    
+    #Select the first 200000 characters and split them to sentences
     sentences=[sent for sent in sent_tokenize(training_data[:400000])]
     newSentences=[]
     for s in sentences:
         s="start1 "+s
         newSentences.append(s)
-        
+    
     unigrams = [word_tokenize(sentence) for sentence in newSentences]
     unigrams=sum(unigrams,[]) 
+  
+    # Count unigrams frequencies, thus creating 
+    # a dictionary with all the unique words and their frequencies.
+    wordfreq_unigrams={}
+    for u in unigrams:
+        wordfreq_unigrams[u] = unigrams.count(u)
     
-    wordfreq_unigrams = [unigrams.count(w) for w in unigrams]
     
     '''replace  all  the rare words of the training subset (e.g., words that do not 
-    occur at least 10 times in the training subset) by a special token *rare*'''
-    for f in range(len(wordfreq_unigrams)):
-       if wordfreq_unigrams[f]<2 or unigrams[f]=="start1":
-           unigrams[f]="*rare*"
-    
-    
-    valid_unigrams=[]
-    for w in range(len(unigrams)):
-        if unigrams[w]!="*rare*":
-            valid_unigrams.append(unigrams[w])
-            
-               
-    wordfreq_vunigrams=[valid_unigrams.count(w) for w in valid_unigrams]
-    
-    #do Laplace smoothing in our bigrams model
-    voc=Tools.vocabulary(valid_unigrams)
-    voc_len = len(voc)
+    occur at least 2 times in the training subset) by a special token *rare*'''
+    frequent_unigrams={}
+    counter=0
+    for key, value in wordfreq_unigrams.iteritems():
+        if value<2:
+            unigrams[counter]="*rare*"
+            counter+=1
+        else:
+            frequent_unigrams.update({key:value})
+            counter+=1
+             
+    #Count all the unique frequent unigrams
+    voc_uni = len(frequent_unigrams)
     
     bigrams = ngrams(unigrams,2)
-    valid_bigrams=[]
+    
+    #Keep all the bigrams that consist of non rare unigrams
+    frequent_bigrams=[]
     for x,y in bigrams:
         if x!="*rare*" and y!="*rare*":
-            valid_bigrams.append((x,y))
+            if frequent_bigrams == [] and x!="start1": #if the first word of the corpus was *rare*
+                frequent_bigrams.append(("start1",x))
+                frequent_bigrams.append((x,y))
+            else:
+                frequent_bigrams.append((x,y))
+                
     
-    bigramsFreq=[valid_bigrams.count(w) for w in valid_bigrams]
-    bigramsDict={}
-    i=0
-    for bigram in valid_bigrams:
-        bigramsDict[bigram]=bigramsFreq[i]
-        i+=1
-
+    # Count bigrams frequencies, thus creating 
+    # a dictionary with all the unique bigrams and their frequencies.
+    wordfreq_bigrams={}
+    for x,y in frequent_bigrams:
+        wordfreq_bigrams[(x,y)] = frequent_bigrams.count((x,y))
     
-    laplace_bigrams=Tools.laplaceSmoothing(bigramsDict,wordfreq_vunigrams,voc_len)
-
+    
+#    laplace_bigrams=Tools.laplaceSmoothing(bigramsDict,wordfreq_vunigrams,voc_len)
+    laplace_bigrams=Tools.laplaceSmoothing(wordfreq_unigrams,wordfreq_bigrams,voc_uni)
+    voc=list(frequent_unigrams.keys())
     
     return laplace_bigrams,voc
