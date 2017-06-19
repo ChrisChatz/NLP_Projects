@@ -48,51 +48,33 @@ def viterbiAlgorithm(testSentence,prob,voc):
     
     #Those for loops are for step 1 and so on
     for step in range(2, len(unigrams)):
-    
-            V.append({})
-            wordsDict[(unigrams[step],step-1)]=minDistance(str(unigrams[step]),voc,5)
-#            print wordsDict
-            for un,lvl in wordsDict.keys():
-                if lvl==step-1:
-                    for z,(x,y) in prevBigram:
-                        if z==step-2:
-                            for dist,word in wordsDict[(un,lvl)]:
-                                #take the max probability from the previous step
-                                try:
-                                    max_prob = max(value["prob"]+prob[(y,word)] for value in V[step-2].values())
-                                except:
-                                    max_prob = max(value["prob"]+ math.log(1/float(len(voc))) for value in V[step-2].values())
-                                levenshtein=math.log(1/float((dist+1)))
-                                V[step-1][y,word]={"prob":levenshtein + max_prob, "previous":(x,y)}
-                                w=step-1  
-                                if (w,(y,word)) not in prevBigram:
-                                    prevBigram.append((step-1,(y,word)))
-                        
-    
-    opt = []   
-    # The highest probability
-    max_prob = max(value["prob"] for value in V[-1].values())
-    previous = None
-    
-    # Get most probable state and its backtrack
-    for st, data in V[-1].items():
-    
-        if data["prob"] == max_prob:
-    
-            opt.append(st)
-    
-            previous = st
-    
-            break
-    
-    
-    # Follow the backtrack till the first observation
-    
-    for t in range(len(V) - 2, -1, -1):
-        opt.insert(0, V[t + 1][previous]["previous"])
-        previous = V[t + 1][previous]["previous"]
-    
-    
+        V.append({})
+        wordsDict[(unigrams[step],step-1)]=minDistance(str(unigrams[step]),voc,5)
+        for un,lvl in wordsDict.keys():
+            if lvl==step-1:
+                for z,(x,y) in prevBigram:
+                    if z==step-2:
+                        for dist,word in wordsDict[(un,lvl)]:
+                            #take the max probability from the previous step
+                            try:
+                                max_prob = max(value["prob"]+prob[(y,word)] for value in V[step-2].values())
+                            except:
+                                max_prob = max(value["prob"]+ math.log(1/float(len(voc))) for value in V[step-2].values())
+                            levenshtein=math.log(1/float((dist+1)))
+                            V[step-1][y,word]={"prob":levenshtein + max_prob, "previous":(x,y)}
+                            w=step-1  
+                            if (w,(y,word)) not in prevBigram:
+                                prevBigram.append((step-1,(y,word)))
+          
+
+    opt=[]
+    for i in V:
+        max_prob= max(value["prob"] for value in i.values())
+        for st, data in i.items():
+            if data["prob"] == max_prob:
+                opt.append(st)
+                break
+                
     correctedSentenceList=[]
     for first,second in opt:
         if second=="start1":
@@ -100,4 +82,5 @@ def viterbiAlgorithm(testSentence,prob,voc):
         correctedSentenceList.append(second)
         
     correctedSentence=" ".join(correctedSentenceList)
+
     return correctedSentence
