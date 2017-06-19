@@ -1,21 +1,12 @@
 import math
 from nltk.tokenize import word_tokenize
 
-def vocabulary(ngram):
-    vocabulary=[]
-    for word in ngram:
-        if word not in vocabulary:
-            vocabulary.append(word)
-    return vocabulary
-
-def laplaceSmoothing(bigrams, freqUn, voc):
+#Implement Laplace Smoothing and create a dictionary with ngrams and their probabilities
+def laplaceSmoothing(wordfreq_nMinus1grams, wordfreq_ngrams, voc):
     prob = {}
-    i=0
-    for key in bigrams:
-        p = math.log(float((bigrams[key] + 1))/(freqUn[i] + voc))
-        i+=1
-        prob[key]=p
-
+    for key, value in wordfreq_ngrams.iteritems():
+        p = math.log(float(value + 1)/(wordfreq_nMinus1grams[key[0]] + voc))
+        prob.update({key:p})
     return prob
 
 def countWords(unigrams1,unigrams2):
